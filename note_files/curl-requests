@@ -1,0 +1,23 @@
+/query Queries
+curl -G "http://localhost:80/query?db=mydb --data-urlencode "q=SELECT * FROM mymeas"
+curl -XPOST "http://localhost:80/query?db=mydb --data-urlencode "q=SELECT * INTO newmeas FROM mymeas"
+curl -XPOST "http://localhost:80/query" --data-urlencode "q=CREATE DATABASE mydb"
+curl -G "http://localhost:80/query?db=mydb&pretty=true" --data-urlencode "q=SELECT * FROM mymeas"
+curl -G "http://localhost:80/query?db=mydb&epoch=s" --data-urlencode "q=SELECT * FROM mymeas"
+curl -XPOST "http://localhost:80/query?u=myusername&p=mypassword" --data-urlencode "q=CREATE DATABASE mydb"
+curl -XPOST "http://localhost:80/query?u=myusername&p=notmypassword" --data-urlencode "q=CREATE DATABASE mydb"
+curl -XPOST -u myusername:mypassword "http://localhost:80/query" --data-urlencode "q=CREATE DATABASE mydb"
+curl -XPOST -u myusername:notmypassword "http://localhost:80/query" --data-urlencode "q=CREATE DATABASE mydb"
+curl -G "http://localhost:80/query?db=mydb&epoch=s" --data-urlencode "q=SELECT * FROM "mymeas";SELECT mean("myfield") FROM mymeas"
+curl -H "Accept: application/csv" -G "http://localhost:80/query?db=mydb --data-urlencode "q=SELECT * FROM mymeas"
+curl -F "q=@queries.txt" -F "async=true" "http://localhost:80/query"
+curl -G "http://localhost:80/query?db=mydb --data-urlencode "q=SELECT * FROM "mymeas" WHERE "mytag1" = $tag_value" --data-urlencode "params={"tag_value":"12"}"
+curl -G "http://localhost:80/query?db=mydb --data-urlencode "q=SELECT * FROM "mymeas" WHERE "myfield" > $field_value" --data-urlencode "params={"field_value":30}"
+curl -G "http://localhost:80/query?db=mydb --data-urlencode "q=SELECT * FROM "mymeas" WHERE "mytag1" = $tag_value AND  "myfield" < $field_value" --data-urlencode "params={"tag_value":"12","field_value":30}"
+curl -i -G "http://localhost:80/query?db=mydb --data-urlencode "q=SELECT * FROM mymeas"
+curl -i -G "http://localhost:80/query?db=mydb1" --data-urlencode "q=SELECT * FROM mymeas"
+curl -i -G "http://localhost:80/query?db=mydb --data-urlencode "q=SELECT *"
+curl -i  -XPOST "http://localhost:80/query?u=myusername&p=notmypassword" --data-urlencode "q=CREATE DATABASE mydb"
+
+
+ /write Queries
