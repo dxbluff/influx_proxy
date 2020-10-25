@@ -1,5 +1,5 @@
-lines                = line ('\n' line)*
-line                 = measurement (',' tag_set)? ws field_set ws timestamp?
+lines                = (' ')line ('\n' line)*
+line                 = measurement (',' tag_set)? ws field_set ws timestamp?('\n')
 measurement          = string_lit ''
 string_lit           = unquoted_string / quoted_string
 bool_lit             = 't' / 'true' / 'T' / 'True' / 'TRUE' / 'f' / 'false' / 'F' / 'False' / 'FALSE'

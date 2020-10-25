@@ -109,30 +109,58 @@ class WriteDecrypter(NodeVisitor):
         return ''.join(visited_children) or node.text  # Для неопределенных токенов возвращаем просто их текст
 
 
+class QueryEncrypter(NodeVisitor):
+
+    def _det_encrypt(self, node: Node, visited_children):
+        token = node.text.replace('"', '')
+        encrypted = det_encrypt_string(token)
+        return encrypted
+
+    visit_identifier = _det_encrypt
+
+    def generic_visit(self, node, visited_children):
+        return ''.join(visited_children) or node.text  # Для неопределенных токенов возвращаем просто их текст
+
+
 with (grammars / 'write.grammar').open(mode='r', encoding='utf-8') as fp:
     write_grammar = Grammar(fp.read())
 
+with (grammars / 'influxql.grammar').open(mode='r', encoding='utf-8') as fp:
+    influxql = Grammar(fp.read())
+
 
 def encrypt_write_query(query):
-    query = query
     tree_plain = write_grammar.parse(query)
     write_encrypter = WriteEncrypter()
     encrypted_query = write_encrypter.visit(tree_plain)
     return encrypted_query
 
 
-def main():
-    payload = "weather,location=us-midwest temperature=82 1465839830100400200"
-    print(f"\nPlain payload: \n{payload}\n")
-    tree_plain = write_grammar.parse(payload)
-    write_encrypter = WriteEncrypter()
-    encrypted_payload = write_encrypter.visit(tree_plain)
-    print(f"\nEncrypted payload: \n{encrypted_payload}\n")
-
+def decrypt_write_query(encrypted_payload):
     tree_encrypted = write_grammar.parse(encrypted_payload)
     write_decrypter = WriteDecrypter()
     decrypted_payload = write_decrypter.visit(tree_encrypted)
+    return decrypted_payload
+
+
+def encrypt_query(query):
+    tree_plain = influxql.parse(query)
+    query_encrypter = QueryEncrypter()
+    encrypted_query = query_encrypter.visit(tree_plain)
+    return encrypted_query
+
+
+def main():
+    write_payload = "weather,location=us-midwest temperature=82 1465839830100400200"
+    print(f"\nPlain payload: \n{write_payload}\n")
+    encrypted_payload = encrypt_write_query(write_payload)
+    print(f"\nEncrypted payload: \n{encrypted_payload}\n")
+    decrypted_payload = decrypt_write_query(encrypted_payload)
     print(f"\nDecrypted payload: \n{decrypted_payload}\n")
+
+    select_payload = 'SELECT * FROM "weather"'
+    encrypted_select_query = encypt_query(select_payload)
+    print(f"\nEncrypted select payload: \n{encrypted_select_query}\n")
 
 
 if __name__ == "__main__":

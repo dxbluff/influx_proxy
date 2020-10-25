@@ -2,6 +2,7 @@ import requests
 from flask import Flask, request
 
 from functions import *
+from write_crypter import encrypt_write_query, encrypt_query
 
 app = Flask(__name__)
 
@@ -32,12 +33,11 @@ def query():
     params = request.args.to_dict()
     headers = request.headers
 
-    # query_plain = params.get("q")
-    # printer(f"Plain query: {query_plain}")
-    # query_encrypted = encrypt_query(query_plain, b"g" * 32)
-    # printer(f"Encrypted query: {query_encrypted}")
-    # params["q"] = query_encrypted
-    # params["q"] = query_plain
+    query_plain = params.get("q")
+    printer(f"Plain query: {query_plain}")
+    query_encrypted = encrypt_query(query_plain)
+    printer(f"Encrypted query: {query_encrypted}")
+    params["q"] = query_encrypted
 
     if request.method == 'GET':
         # SELECT, SHOW
@@ -49,6 +49,7 @@ def query():
         # ALTER CREATE DELETE DROP GRANT KILL REVOKE
         response = requests.post(f'http://{INFLUX_HOST}:{INFLUX_PORT}/query', params=params)
         # https://docs.influxdata.com/influxdb/v1.7/guides/querying_data/
+        printer(json.loads(response.text))
         # if params["q"].split(" ")[0] == "select":
         #     to_client = Aggregation(json.loads(response.text))
         #     printer(json.loads(to_client.get_response_data()))
@@ -64,9 +65,10 @@ def query():
 
 @app.route('/write', methods=["POST"])
 def write():
-    data = request.get_data().decode()[1:-1]  # bytes
+    data = request.get_data().decode()  # bytes
     printer(data)
 
+    # data = 'weather,location=us-midwest temperature=82 1465839830100400200'
     encrypted_data = encrypt_write_query(data).encode()
     printer(encrypted_data)
 
