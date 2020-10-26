@@ -1,6 +1,8 @@
 import json
 import pprint
 
+from write_crypter import det_decrypt_string, ope_decrypt_int, base64padder
+
 
 class Aggregation:
     def __init__(self, response_data):
@@ -30,6 +32,37 @@ class Aggregation:
 
     def get_response_data(self):
         return json.dumps(self.response_data)
+
+
+def decrypt_response(response: json) -> json:
+    series = response["results"][0]["series"][0]
+    name = series["name"]  # name of table
+    series["name"] = det_decrypt_string(base64padder(name))
+
+    columns = series["columns"]  # array with columns
+    values = series["values"]  # array of arrays of values
+
+    for i in range(len(columns)):
+        if columns[i] == "time":
+            continue
+        elif columns[i][:4] == "ope_":
+            columns[i] = det_decrypt_string(base64padder(columns[i][4:]))
+            for j in range(len(values)):
+                values[j][i] = ope_decrypt_int(values[j][i])
+            continue
+        elif columns[i][:4] == "phe_":
+            columns.pop(i)
+            # columns[i] = det_decrypt_string(base64padder(columns[i][4:]))
+            for j in range(len(values)):
+                values[j].pop(i)
+                # values[j][i] = he_decrypt(values[j][i].as_integer_ratio()[0])
+            continue
+        else:
+            columns[i] = det_decrypt_string(base64padder(columns[i]))
+            for j in range(len(values)):
+                values[j][i] = det_decrypt_string(base64padder(values[j][i]))
+
+    return response
 
 
 def printer(data):

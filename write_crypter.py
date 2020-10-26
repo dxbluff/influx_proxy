@@ -159,7 +159,7 @@ def main():
     print(f"\nDecrypted payload: \n{decrypted_payload}\n")
 
     select_payload = 'SELECT * FROM "weather"'
-    encrypted_select_query = encypt_query(select_payload)
+    encrypted_select_query = encrypt_query(select_payload)
     print(f"\nEncrypted select payload: \n{encrypted_select_query}\n")
 
 

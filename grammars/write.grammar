@@ -1,4 +1,4 @@
-lines                = (' ')line ('\n' line)*
+lines                = ws? line ('\n' line)*
 line                 = measurement (',' tag_set)? ws field_set ws timestamp?('\n')
 measurement          = string_lit ''
 string_lit           = unquoted_string / quoted_string

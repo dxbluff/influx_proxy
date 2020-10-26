@@ -5,7 +5,6 @@ from functions import *
 from write_crypter import encrypt_write_query, encrypt_query
 
 app = Flask(__name__)
-
 INFLUX_HOST = "127.0.0.1"
 INFLUX_PORT = "8086"
 
@@ -42,24 +41,14 @@ def query():
     if request.method == 'GET':
         # SELECT, SHOW
         response = requests.get(f'http://{INFLUX_HOST}:{INFLUX_PORT}/query', params=params, headers=headers)
-        response_data = json.loads(response.text)
-        printer(response_data)
         return response.text, response.status_code
     elif request.method == 'POST':
         # ALTER CREATE DELETE DROP GRANT KILL REVOKE
         response = requests.post(f'http://{INFLUX_HOST}:{INFLUX_PORT}/query', params=params)
         # https://docs.influxdata.com/influxdb/v1.7/guides/querying_data/
-        printer(json.loads(response.text))
-        # if params["q"].split(" ")[0] == "select":
-        #     to_client = Aggregation(json.loads(response.text))
-        #     printer(json.loads(to_client.get_response_data()))
-        #     columns = to_client.get_columns()
-        #     name = to_client.get_name()
-        #     values = to_client.get_values()
-        #     for value in values:
-        #         value[1] = f"Changed in proxy. origin: {value[1]}"
-        #     response_data = to_client.set_new_data(values=values)
-        #     return to_client.get_response_data(), response.status_code
+        printer(response.json())
+        if params["q"].split(" ")[0] == "SELECT":
+            return decrypt_response(response.json()), response.status_code
         return response.text, response.status_code
 
 
@@ -68,7 +57,7 @@ def write():
     data = request.get_data().decode()  # bytes
     printer(data)
 
-    # data = 'weather,location=us-midwest temperature=82 1465839830100400200'
+    # data = 'weather5,location=us-midwest temperature=82 1465839830100400200'
     encrypted_data = encrypt_write_query(data).encode()
     printer(encrypted_data)
 
